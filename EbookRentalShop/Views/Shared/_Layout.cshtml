@@ -1,0 +1,75 @@
+﻿@using EbookRentalShop.Models;
+@using Microsoft.AspNet.Identity;
+@using Microsoft.AspNet.Identity.EntityFramework;
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Wypożyczalnia e-booków</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @Html.ActionLink("Wypożyczalnia e-booków", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li>@Html.ActionLink("Katalog", "Index", "Ebooks")</li>
+                    <li>@Html.ActionLink("Moje książki", "Index", "Borrows")</li>
+                    @{
+                        ApplicationDbContext db = new ApplicationDbContext();
+
+                        var listOfUsers = (from u in db.Users
+                                           let query = (from ur in db.Set<IdentityUserRole>()
+                                                        where ur.UserId.Equals(u.Id)
+                                                        join r in db.Roles on ur.RoleId equals r.Id
+                                                        select r.Name)
+                                           select new UserRoleInfo() { User = u, Roles = query.ToList<string>() })
+                                     .ToList();
+
+
+                        var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>());
+                        var userRole = listOfUsers.Where(p => p.User.Id == User.Identity.GetUserId());
+                    }
+                    @if ((Request.IsAuthenticated) && (userRole.First().Roles.Contains("SuperAdmin")))
+                    {
+
+                        <li>@Html.ActionLink("Propozycje", "Index", "Suggestions")</li>
+                        <li>@Html.ActionLink("Autorzy", "Index", "Authors")</li>
+                        <li>@Html.ActionLink("Wydawnictwa", "Index", "Publishers")</li>
+                        <li>@Html.ActionLink("Kategorie", "Index", "Categories")</li>
+
+                    }
+                    else
+                    {
+                        <li>@Html.ActionLink("Propozycje", "Create", "Suggestions")</li>
+                    }
+
+                </ul>
+                @Html.Partial("_LoginPartial")
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer>
+            <p>&copy; @DateTime.Now.Year - LewMatt</p>
+        </footer>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

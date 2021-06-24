@@ -1,0 +1,120 @@
+﻿@model IEnumerable<EbookRentalShop.Models.Borrows>
+@using EbookRentalShop.Models;
+@using Microsoft.AspNet.Identity;
+@using Microsoft.AspNet.Identity.EntityFramework;
+
+@{
+    ViewBag.Title = "Moje książki";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    ApplicationDbContext db = new ApplicationDbContext();
+
+    var books = db.Ebooks.ToList();
+
+    var listOfUsers = (from u in db.Users
+                       let query = (from ur in db.Set<IdentityUserRole>()
+                                    where ur.UserId.Equals(u.Id)
+                                    join r in db.Roles on ur.RoleId equals r.Id
+                                    select r.Name)
+                       select new UserRoleInfo() { User = u, Roles = query.ToList<string>() })
+                 .ToList();
+
+
+    var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>());
+    var userRole = listOfUsers.Where(p => p.User.Id == User.Identity.GetUserId());
+
+
+}
+
+<h2>Moje książki</h2>
+
+@if ((Request.IsAuthenticated) && !(userRole.First().Roles.Contains("SuperAdmin")))
+{
+    <table class="table">
+        <tr>
+            <th>
+                Tytuł
+            </th>
+            <th>
+                Data wypożyczenia
+            </th>
+            <th>
+                Data oddania
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            var itm = books.Where(p => p.EbookID == item.EbookID).Single();
+
+            <tr>
+                <td>
+                    @itm.Title.ToString()
+                </td>
+                <td>
+                    @item.BorrowDate.ToString("MM/dd/yyyy")
+                </td>
+                <td>
+                    @item.ReturnDate.ToString("MM/dd/yyyy")
+                </td>
+                <td>
+
+                    @Html.ActionLink("Oddaj", "Delete", new { id = item.BorrowID })
+                </td>
+            </tr>
+        }
+
+    </table>
+}
+else
+{
+    <table class="table">
+        <tr>
+            <th>
+                ID Użytkownika
+            </th>
+            <th>
+                Tytuł
+            </th>
+            <th>
+                Data wypożyczenia
+            </th>
+            <th>
+                Data oddania
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            var itm = books.Where(p => p.EbookID == item.EbookID).Single();
+
+    <tr>
+        <td>
+            @item.UserID
+        </td>
+        <td>
+            @itm.Title.ToString()
+        </td>
+        <td>
+            @item.BorrowDate.ToString("MM/dd/yyyy")
+        </td>
+        <td>
+            @item.ReturnDate.ToString("MM/dd/yyyy")
+        </td>
+        <td>
+
+            @Html.ActionLink("Oddaj", "Delete", new { id = item.BorrowID })
+        </td>
+    </tr>
+        }
+
+    </table>
+}
+
+
+
+

@@ -1,0 +1,42 @@
+﻿@model EbookRentalShop.Models.Borrows
+
+@{
+    ViewBag.Title = "Oddaj";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Oddaj książkę</h2>
+
+<h3>Czy na pewno chcesz oodać?</h3>
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        
+
+        <dt>
+            Data wypożyczenia
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.BorrowDate)
+        </dd>
+
+        <dt>
+            Data oddania
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ReturnDate)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Oddaj" class="btn btn-default" /> |
+            @Html.ActionLink("Anuluj", "Index")
+        </div>
+    }
+</div>

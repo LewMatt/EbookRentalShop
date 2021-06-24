@@ -1,0 +1,51 @@
+﻿@model IEnumerable<EbookRentalShop.Models.Suggestions>
+
+@using EbookRentalShop.Models;
+@using Microsoft.AspNet.Identity;
+@using Microsoft.AspNet.Identity.EntityFramework;
+@{
+    ViewBag.Title = "Propozycje";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Propozycje</h2>
+
+    
+    <table class="table">
+        <tr>
+            <th>
+                ID Użytkownika
+            </th>
+            <th>
+                Tytuł
+            </th>
+            <th>
+                Autor
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UserID)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Author)
+                </td>
+                <td>
+                    
+                    @Html.ActionLink("Usuń", "Delete", new { id = item.SuggestionID })
+                </td>
+            </tr>
+        }
+
+    </table>
+
+
+
+

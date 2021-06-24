@@ -1,0 +1,117 @@
+﻿@model IEnumerable<EbookRentalShop.Models.Ebooks>
+@using EbookRentalShop.Models;
+@using Microsoft.AspNet.Identity;
+@using Microsoft.AspNet.Identity.EntityFramework;
+
+@{
+    ViewBag.Title = "Katalog";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{
+    ApplicationDbContext db = new ApplicationDbContext();
+
+    var listOfUsers = (from u in db.Users
+                       let query = (from ur in db.Set<IdentityUserRole>()
+                                    where ur.UserId.Equals(u.Id)
+                                    join r in db.Roles on ur.RoleId equals r.Id
+                                    select r.Name)
+                       select new UserRoleInfo() { User = u, Roles = query.ToList<string>() })
+                 .ToList();
+
+
+    var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>());
+    var userRole = listOfUsers.Where(p => p.User.Id == User.Identity.GetUserId());
+}
+<h2>Katalog</h2>
+@if ((Request.IsAuthenticated) && (userRole.First().Roles.Contains("SuperAdmin")))
+{
+    <p>
+        @Html.ActionLink("Dodaj nową", "Create")
+    </p>
+}
+
+@{
+   
+
+    var authors = db.Authors.ToList();
+    var cats = db.Categories.ToList();
+    var pubs = db.Publishers.ToList();
+
+}
+
+<table class="table">
+    <tr>
+        <th>
+            Tytuł
+        </th>
+        <th>
+            Opis
+        </th>
+        <th>
+            Autor
+        </th>
+        <th>
+            Kategoria
+        </th>
+        <th>
+            Data wydania
+        </th>
+        <th>
+            Wydawnictwo
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        var aut = authors.Where(p => p.AuthorID == item.AuthorID).Single();
+        var cat = cats.Where(p => p.CategoryID == item.CategoryID).Single();
+        var pub = pubs.Where(p => p.PublisherID == item.PublisherID).Single();
+
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @aut.ToString()
+            </td>
+            <td>
+                @cat.Name.ToString()
+            </td>
+            <td>
+                @item.ReleaseDate.ToString("MM/dd/yyyy")
+            </td>
+            <td>
+               @pub.Name.ToString()
+            </td>
+
+
+
+            @if (Request.IsAuthenticated)
+            {
+                if (userRole.First().Roles.Contains("SuperAdmin"))
+                {
+                    <td>
+                        @Html.ActionLink("Edytuj", "Edit", new { id = item.EbookID }) |
+                        @Html.ActionLink("Szczegóły", "Details", new { id = item.EbookID }) |
+                        @Html.ActionLink("Usuń", "Delete", new { id = item.EbookID })
+                    </td>
+                }
+                else if (!(userRole.First().Roles.Contains("SuperAdmin")))
+                {
+                    <td>
+
+
+                        @Html.ActionLink("Wypożycz", "BorrowAdd", "Borrows", new { EbookID = item.EbookID, UserID = User.Identity.GetUserId() }, "")
+
+                    </td>
+                }
+            }
+
+        </tr>
+    }
+
+</table>
